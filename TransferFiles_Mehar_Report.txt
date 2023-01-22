@@ -1,0 +1,50 @@
+First, all the modules are imported which will be used in the program:
+
+from datetime import time, datetime, timedelta
+import ftplib
+import os
+import sched
+import shutil
+import schedule
+import time as tm
+import io
+import sys
+
+This script uses the ftplib library to connect to an FTP server using the login credentials provided:
+ftp = ftplib.FTP("ftp.us.debian.org")
+ftp.login("anonymous", "anonymous@")
+
+It changes the working directory on the remote server to the specified path:
+ftp.cwd("debian")
+
+Then creates a local directory if it does not already exist:
+if not os.path.exists(local_directory):
+      os.makedirs(local_directory)
+
+It then retrieves a list of files from the remote server and downloads them to the local directory:
+for file in files:
+        local_file = os.path.join(local_directory, file)
+        try:
+            with open(local_file, 'wb') as f:
+                ftp.retrbinary('RETR ' + file, f.write)
+                print(file)
+        except:
+            print("not able to open the file", file)
+            continue
+ 
+
+After that, it uses the shutil library to move the downloaded files to another directory on the internal network(in this case, some other local directory):
+os.chmod(internal_network_directory, 0o777)
+    for file in files:
+        shutil.move(local_directory + "/" + file, internal_network_directory + "/" + file)
+
+
+Finally, it uses the schedule library to run the transfer_files function every day at "particular time":
+def timing(time, function):
+    schedule.every().day.at(time).do(function)
+    while True:
+        schedule.run_pending()
+        # tm.sleep(1)
+
+timing("22:27", transfer_files) 
+
